@@ -2,6 +2,7 @@ package com.irv205.apimockinterceptor.di
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.irv205.apimockinterceptor.data.mock.MockInterceptor
 import com.irv205.apimockinterceptor.data.network.NetworkLoggingInterceptor
 import com.irv205.apimockinterceptor.data.remote.api.RickAndMortyApi
 import dagger.Module
@@ -37,8 +38,10 @@ object NetworkModule {
     fun provideOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor,
         networkLoggingInterceptor: NetworkLoggingInterceptor,
+        mockInterceptor: MockInterceptor,
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(networkLoggingInterceptor)
+        .addInterceptor(mockInterceptor)
         .addInterceptor(loggingInterceptor)
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)

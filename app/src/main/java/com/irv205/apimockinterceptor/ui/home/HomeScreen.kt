@@ -8,34 +8,55 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
+import com.irv205.apimockinterceptor.data.featureflags.FeatureFlag
+import com.irv205.apimockinterceptor.data.featureflags.FeatureFlagsRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onCharacterClick: (Int) -> Unit,
+    onOpenMockServices: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val characters = viewModel.characters.collectAsLazyPagingItems()
     val refresh = characters.loadState.refresh
+    val flagsViewModel: HomeFlagsViewModel = hiltViewModel()
+    val flags by flagsViewModel.flags.collectAsStateWithLifecycle()
+    val mockEnabled = flags[FeatureFlag.MOCK_SERVICE] ?: FeatureFlag.MOCK_SERVICE.defaultValue
 
     Scaffold(
         topBar = { TopAppBar(title = { Text(text = "Personajes") }) },
+        floatingActionButton = {
+            if (mockEnabled) {
+                FloatingActionButton(onClick = onOpenMockServices) {
+                    Icon(imageVector = Icons.Filled.Build, contentDescription = "Mocks")
+                }
+            }
+        },
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -82,9 +103,7 @@ fun HomeScreen(
 
                         when (val append = characters.loadState.append) {
                             is LoadState.Loading -> item { FooterLoading() }
-                            is LoadState.Error -> item {
-                                FooterError(onRetry = { characters.retry() })
-                            }
+                            is LoadState.Error -> item { FooterError(onRetry = { characters.retry() }) }
                             else -> Unit
                         }
                     }

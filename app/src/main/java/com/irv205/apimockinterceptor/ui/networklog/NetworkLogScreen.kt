@@ -21,10 +21,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -49,6 +51,8 @@ import com.irv205.apimockinterceptor.data.network.NetworkCall
 @Composable
 fun NetworkLogScreen(
     onBack: () -> Unit,
+    onOpenFeatureFlags: () -> Unit,
+    onOpenMockServices: () -> Unit,
     viewModel: NetworkLogViewModel = hiltViewModel(),
 ) {
     val calls by viewModel.calls.collectAsStateWithLifecycle()
@@ -79,25 +83,51 @@ fun NetworkLogScreen(
             )
         },
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            if (calls.isEmpty()) {
-                Text(
-                    text = "Aún no hay llamadas registradas",
-                    modifier = Modifier.align(Alignment.Center),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                FilledTonalButton(
+                    onClick = onOpenFeatureFlags,
+                    modifier = Modifier.weight(1f),
                 ) {
-                    items(items = calls, key = { it.id }) { call ->
-                        NetworkCallCard(call = call)
+                    Text(text = "Feature flags")
+                }
+                OutlinedButton(
+                    onClick = onOpenMockServices,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(text = "Mock service")
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            ) {
+                if (calls.isEmpty()) {
+                    Text(
+                        text = "Aún no hay llamadas registradas",
+                        modifier = Modifier.align(Alignment.Center),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(items = calls, key = { it.id }) { call ->
+                            NetworkCallCard(call = call)
+                        }
                     }
                 }
             }
